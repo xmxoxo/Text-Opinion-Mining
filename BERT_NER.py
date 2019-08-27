@@ -160,7 +160,9 @@ class DataProcessor(object):
                 if contends.startswith("-DOCSTART-"):
                     words.append('')
                     continue
-                if len(contends) == 0 and words[-1] == '。':
+                #注意，句子结束只有换行，不一定是句号结尾。
+                #if len(contends) == 0 and words[-1] == '。':
+                if len(contends) == 0:
                     l = ' '.join([label for label in labels if len(label) > 0])
                     w = ' '.join([word for word in words if len(word) > 0])
                     lines.append([l, w])
@@ -186,7 +188,6 @@ class NerProcessor(DataProcessor):
     def get_test_examples(self,data_dir):
         return self._create_example(
             self._read_data(os.path.join(data_dir, "test.txt")), "test")
-
 
     def get_labels(self):
         return ["O", "B-ASP", "I-ASP", "B-OPI", "I-OPI", "X","[CLS]","[SEP]"]
@@ -385,7 +386,7 @@ def create_model(bert_config, is_training, input_ids, input_mask,
         output_layer = tf.reshape(output_layer, [-1, hidden_size])
         logits = tf.matmul(output_layer, output_weight, transpose_b=True)
         logits = tf.nn.bias_add(logits, output_bias)
-        logits = tf.reshape(logits, [-1, FLAGS.max_seq_length, 11])
+        logits = tf.reshape(logits, [-1, FLAGS.max_seq_length, num_labels+1])
         # mask = tf.cast(input_mask,tf.float32)
         # loss = tf.contrib.seq2seq.sequence_loss(logits,labels,mask)
         # return (loss, logits, predict)
@@ -447,12 +448,12 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                 scaffold_fn=scaffold_fn)
         elif mode == tf.estimator.ModeKeys.EVAL:
             
-            def metric_fn(per_example_loss, label_ids, logits):
+            def metric_fn(per_example_loss, label_ids,num_labels, logits,):
             # def metric_fn(label_ids, logits):
                 predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
-                precision = tf_metrics.precision(label_ids,predictions,11,[2,3,4,5,6,7],average="macro")
-                recall = tf_metrics.recall(label_ids,predictions,11,[2,3,4,5,6,7],average="macro")
-                f = tf_metrics.f1(label_ids,predictions,11,[2,3,4,5,6,7],average="macro")
+                precision = tf_metrics.precision(label_ids,predictions,num_labels+1, list(range(2,num_labels-2)),average="macro")
+                recall = tf_metrics.recall(label_ids,predictions,num_labels+1, list(range(2,num_labels-2)),average="macro")
+                f = tf_metrics.f1(label_ids,predictions,num_labels+1, list(range(2,num_labels-2)),average="macro")
                 #
                 return {
                     "eval_precision":precision,
@@ -460,7 +461,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                     "eval_f": f,
                     #"eval_loss": loss,
                 }
-            eval_metrics = (metric_fn, [per_example_loss, label_ids, logits])
+            eval_metrics = (metric_fn, [per_example_loss, label_ids,num_labels, logits])
             # eval_metrics = (metric_fn, [label_ids, logits])
             output_spec = tf.contrib.tpu.TPUEstimatorSpec(
                 mode=mode,

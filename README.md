@@ -56,11 +56,38 @@
 ## 训练模型：
 
 ```
-python BERT_NER.py --data_dir=TRAIN/ 
-	--bert_config_file=checkpoint/bert_config.json 
-	--init_checkpoint=checkpoint/bert_model.ckpt 
-	--vocab_file=checkpoint/vocab.txt 
+sudo python BERT_NER.py \
+	--do_train=true \
+	--do_eval=true \
+	--do_predict=true \
+	--data_dir=./TRAIN/ \
+	--bert_config_file=../bert/chinese_L-12_H-768_A-12/bert_config.json \
+	--init_checkpoint=../bert/chinese_L-12_H-768_A-12/bert_model.ckpt \
+	--vocab_file=../bert/chinese_L-12_H-768_A-12/vocab.txt \
 	--output_dir=./output/
 ```
+
+## 预测数据(测试数据)：
+
+```
+sudo python BERT_NER.py \
+	--do_predict=true \
+	--data_dir=./TRAIN/ \
+	--bert_config_file=../bert/chinese_L-12_H-768_A-12/bert_config.json \
+	--init_checkpoint=../bert/chinese_L-12_H-768_A-12/bert_model.ckpt \
+	--vocab_file=../bert/chinese_L-12_H-768_A-12/vocab.txt \
+	--output_dir=./output/
+```
+
+## 预测完后数据的处理
+```
+sudo python labelpick.py
+```
+
+会在`output`目录下生成合并结果文件(merge_test.txt) 和提取结果文件 (picklabel_test.txt)
+
+
+
+
 
 

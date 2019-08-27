@@ -151,6 +151,7 @@ def CreateSerialFile (path= './train/', rebuild = 0):
     strLine = ''
     lstLine = []
     print('正在生成标注文件...')
+    #训练集:验证集 比例= 8:2 （按记录条数）
     #循环处理每一行
     #字段列表： id,AspectTerms,A_start,A_end,OpinionTerms,O_start,O_end
     for i in range(len(df)):
@@ -171,13 +172,13 @@ def CreateSerialFile (path= './train/', rebuild = 0):
         
         if x['AspectTerms']!='_':
             for j in range(int(x['A_start']), int(x['A_end'])):
-                if i==x['A_start']: 
+                if str(j)==x['A_start']: 
                     lstLine[j]= lstLine[j].replace(' O',' B-ASP')
                 else:
                     lstLine[j]= lstLine[j].replace(' O',' I-ASP')
         if x['OpinionTerms']!='_':
             for j in range(int(x['O_start']), int(x['O_end'])):
-                if i==x['A_start']: 
+                if str(j)==x['O_start']: 
                     lstLine[j]= lstLine[j].replace(' O',' B-OPI')
                 else:
                     lstLine[j]= lstLine[j].replace(' O',' I-OPI')
@@ -189,12 +190,45 @@ def CreateSerialFile (path= './train/', rebuild = 0):
     savetofile(strTxt, fnout)
     print('标注数据已保存。')
     
+#生成测试集的数据样本
+def CreateTestSet (path= './TEST/', rebuild = 0):
+    pass
+    fnout = os.path.join('./TRAIN/', 'test.txt')
+    if rebuild:
+        print('重新生成测试集文件...')
+    else:
+        if os.path.isfile(fnout):
+            print('测试集数据文件已生成,跳过生成步骤...')
+            return 0
+
+    print('正在生成测试集文件...')
+    #读取数据文件
+    fn = os.path.join(path, 'Test_reviews.csv')
+    df = pd.read_csv(fn)
+    #字段列表： id,Reviews
+    sTxt = '\n'.join(list(df['Reviews']))
+    strRet = '\n'.join([ x + ' O' if x!='\n' else '' for x in sTxt])
+    #print(strRet)    
+    savetofile(strRet, fnout)
+    print('测试集数据已保存。')
+
 
 if __name__ == '__main__':
     pass
+    rebuild = 0
+
     #合并数据
     DatMerge()
+
     #getEnum()
 
-    #生成序列标注文件
-    CreateSerialFile()
+    #----NER标注部分----
+    #训练集与验证集：生成序列标注文件
+    CreateSerialFile(rebuild = rebuild)
+
+    #生成测试集
+    CreateTestSet(rebuild = rebuild)
+
+    #----NER标注部分结束----
+
+
