@@ -90,8 +90,8 @@ def pre_FixColumns (df, filename = 'datColumns.txt'):
         return df
 
 #把原文内容合并到四元组记录中，形成新的数据文件
-def DatMerge (path= './train/', rebuild = 0):
-    fnout = os.path.join(path, 'Train_merge.csv')
+def DatMerge (path= './train/', outpath = './data/', rebuild = 0):
+    fnout = os.path.join(outpath, 'Train_merge.csv')
     if rebuild:
         print('指定强制重新生成数据文件...')
     else:
@@ -132,9 +132,9 @@ def getEnum (path= './train/'):
     df = MapNewColumn(df,'Polarities','Polarities_v')
 
 #生成序列标注训练文件
-def CreateSerialFile (path= './train/', rebuild = 0):
+def CreateSerialFile (path= './train/', outpath = './data/' , rebuild = 0):
     pass
-    fnout = os.path.join(path, 'train.txt') 
+    fnout = os.path.join(outpath, 'train.txt') 
     if rebuild:
         print('指定强制重新生成标注文件...')
     else:
@@ -151,7 +151,8 @@ def CreateSerialFile (path= './train/', rebuild = 0):
     strLine = ''
     lstLine = []
     print('正在生成标注文件...')
-    #训练集:验证集 比例= 8:2 （按记录条数）
+    #Todo:  训练集:验证集 比例 = 8:2 （按记录条数）
+
     #循环处理每一行
     #字段列表： id,AspectTerms,A_start,A_end,OpinionTerms,O_start,O_end
     for i in range(len(df)):
@@ -190,10 +191,10 @@ def CreateSerialFile (path= './train/', rebuild = 0):
     savetofile(strTxt, fnout)
     print('标注数据已保存。')
     
-#生成测试集的数据样本
-def CreateTestSet (path= './TEST/', rebuild = 0):
+#生成标注 测试集的数据样本
+def CreateTestSet (path= './TEST/', outpath = './data/', rebuild = 0):
     pass
-    fnout = os.path.join('./TRAIN/', 'test.txt')
+    fnout = os.path.join(outpath, 'test.txt')
     if rebuild:
         print('重新生成测试集文件...')
     else:
@@ -211,6 +212,97 @@ def CreateTestSet (path= './TEST/', rebuild = 0):
     #print(strRet)    
     savetofile(strRet, fnout)
     print('测试集数据已保存。')
+
+
+#生成情感模型训练数据
+#字段列表：,id,AspectTerms,A_start,A_end,OpinionTerms,O_start,O_end,Categories,Polarities,text
+def CreatePolarityTrain (path= './TRAIN/', outpath = './Polarity/data/', rebuild = 0):
+    pass
+    fnout = os.path.join(outpath, 'train.tsv') 
+    if rebuild:
+        print('指定强制重新生成标注文件...')
+    else:
+        if os.path.isfile(fnout):
+            print('标注文件已生成,跳过生成步骤...')
+            return 0
+    
+    fndat = os.path.join(path, 'Train_labels.csv')
+    df = pd.read_csv(fndat,index_col=[0])
+    
+    #df = MapNewColumn(df,'Polarities','label')
+    '''
+    [Polarities]列值分布情况:
+    正面    2
+    负面    1
+    中性    0
+    Name: Polarities, dtype: int64
+    '''
+    #lstLabels = ['正面','中性','负面']
+    #df['label'] = df['Polarities'].apply(lambda x: lstLabels.index(x)) 
+
+    #替换掉"_"
+    df['AspectTerms'] = df['AspectTerms'].replace('_','')
+    df['OpinionTerms'] = df['OpinionTerms'].replace('_','')
+    df['text'] = df['AspectTerms'] + df['OpinionTerms'] 
+    
+    #输出字段清单: Polarities,text
+    dfn = df[['Polarities','text']]
+    #删除完全相同的数据行
+    dfn = dfn.drop_duplicates()#keep='first', inplace=True)
+
+    #数据随机打乱
+    dfn = dfn.sample(frac=1)
+    
+    #数据集切分: train:dev:test = 8:2:10
+    intTotal = dfn.shape[0]
+    intCut = int(intTotal*0.8)
+    df_train = dfn.head(intCut)
+    df_dev = dfn.tail(intTotal - intCut)
+
+    #保存数据  #,sep='\t'
+    df_train.to_csv(fnout,index=False)
+    df_dev.to_csv(os.path.join(outpath, 'dev.tsv'),index=False) 
+    dfn.to_csv(os.path.join(outpath, 'test.tsv'),index=False)
+    print('情感模型训练数据已生成。')
+
+##生成分类模型训练数据
+def CreateCategoryTrain (path= './TRAIN/', outpath = './Category/data/', rebuild = 0):
+    pass
+    fnout = os.path.join(outpath, 'train.tsv') 
+    if rebuild:
+        print('指定强制重新生成标注文件...')
+    else:
+        if os.path.isfile(fnout):
+            print('标注文件已生成,跳过生成步骤...')
+            return 0
+    
+    fndat = os.path.join(path, 'Train_labels.csv')
+    df = pd.read_csv(fndat,index_col=[0])
+
+    #替换掉"_"
+    df['AspectTerms'] = df['AspectTerms'].replace('_','')
+    df['OpinionTerms'] = df['OpinionTerms'].replace('_','')
+    df['text'] = df['AspectTerms'] + df['OpinionTerms'] 
+
+    #输出字段清单: label,text
+    dfn = df[['Categories','text']]
+    #删除完全相同的数据行
+    dfn = dfn.drop_duplicates()#keep='first', inplace=True)
+
+    #数据随机打乱
+    dfn = dfn.sample(frac=1)
+    
+    #数据集切分: train:dev:test = 8:2:10
+    intTotal = dfn.shape[0]
+    intCut = int(intTotal*0.8)
+    df_train = dfn.head(intCut)
+    df_dev = dfn.tail(intTotal - intCut)
+
+    #保存数据  #,sep='\t'
+    df_train.to_csv(fnout,index=False)
+    df_dev.to_csv(os.path.join(outpath, 'dev.tsv'),index=False) 
+    dfn.to_csv(os.path.join(outpath, 'test.tsv'),index=False)
+    print('分类模型训练数据已生成。')
 
 
 if __name__ == '__main__':
@@ -231,4 +323,7 @@ if __name__ == '__main__':
 
     #----NER标注部分结束----
 
+    CreatePolarityTrain(rebuild = rebuild)
+
+    CreateCategoryTrain(rebuild =1)
 

@@ -63,6 +63,22 @@ def doprocess(path):
     mergefn = os.path.join(path, 'merge_test.txt')
     txtout.to_csv(mergefn,index=False,sep="\t",header = None)
 
+    #生成句子拆分标识索引号
+    f_index0 = txtout[txtout.columns[0]][txtout[txtout.columns[1]].isin(['[CLS]'])]
+    f_index1 = txtout[txtout.columns[0]][txtout[txtout.columns[1]].isin(['[SEP]'])]
+    lstSeg = list(zip(list(f_index0.index),list(f_index1.index)))
+    
+    '''
+    print(f_index0.head(10))
+    print('-'*30)
+    print(f_index1.head(10))
+
+    print(lstSeg[:10])
+    print(len(lstSeg))
+    return 0
+    '''
+
+    #提取label
     fout = txtout[txtout[txtout.columns[1]].isin(labels)]
     print(fout.head(10))   
     print('-'*30)
@@ -74,21 +90,21 @@ def doprocess(path):
 
     seg = ''
     index = 0
+    lastlbl = ''
     for x in fout.index:
         word = fout[fout.columns[0]][x]
         lbl = fout[fout.columns[1]][x]
         
-        #print(word,lbl)
-        #break
-        if lbl[0] == 'B':
-            if len(seg)>1:
+        if lbl[0] == 'B' or lastlbl[-3:] != lbl[-3:]:
+            if len(seg)>1 and lastlbl:
                 lstindex.append(index)
                 lsttxt.append(seg)
-                lstlabel.append(lbl[-3:])
+                lstlabel.append(lastlbl[-3:])
             seg = word
             index = x
         else:
             seg +=word
+        lastlbl = lbl
 
     '''
     print(lstindex[:20])
@@ -106,32 +122,26 @@ def doprocess(path):
 
     #转为DataFrame
     outdf = pd.DataFrame(dictDat)
+
+    #给数据增加ID号, lstSeg 记录着每条记录的开始与结束
+    #[(0, 39), (40, 70), (71, 86), (87, 100), (101, 130), (131, 157), (158, 172), (173, 182), (183, 224), (225, 236)]
+    def getid (index):
+        for i in range(len(lstSeg)):
+            tseg = lstSeg[i]
+            if tseg[0]<index<tseg[1]:
+                return i+1
+                break
+
+    outdf['id'] = outdf['index'].apply(getid)
+    outdf = outdf[['id','index','txt','label']]
     print(outdf.head(10))
 
     #保存提取的结果
     outfile =  os.path.join(path, 'picklabel_test.txt')
-    outdf.to_csv(outfile,index=False,sep="\t")
+    outdf.to_csv(outfile,index=False) #,sep="\t"
     print('result saved!')
     print('-'*30)
 
-    #筛选
-    #print(outdf.mean())
-    
-    '''
-    #分组
-    gp = outdf[outdf.columns[1]]
-    #print(gp.columns())
-    gp = gp.sort_values(0)
-    #print(gp)
-
-    result= pd.value_counts(gp)
-    #print(result)
-    print(result.head(20))
-    #outdf.groupby(outdf.columns[0])
-    #print(outdf.head(25))
-    #savetofile (str(result) , os.path.join(path, 'label_count.txt'))
-    result.to_csv(os.path.join(path, 'label_count.txt'),sep="\t")
-    '''
 
 #命令行方法
 def maincli ():

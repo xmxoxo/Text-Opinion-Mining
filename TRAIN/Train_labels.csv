@@ -1,4 +1,4 @@
-id,AspectTerms,A_start,A_end,OpinionTerms,O_start,O_end,Categories,Polarities
+﻿id,AspectTerms,A_start,A_end,OpinionTerms,O_start,O_end,Categories,Polarities
 1,_, , ,很好,0,2,整体,正面
 1,_, , ,超值,3,5,价格,正面
 1,_, , ,很好用,6,9,整体,正面
