@@ -1,4 +1,4 @@
-﻿1. 提交结果包括5个字段：id，AspectTerm，OpinionTerm，Category，Polarity，一条结果保存为一行；
+1. 提交结果包括5个字段：id，AspectTerm，OpinionTerm，Category，Polarity，一条结果保存为一行；
 
 
 
@@ -6,8 +6,7 @@
 
 
 
-3. id不可以为空，从1开始编号，顺序递增，与Test_reviews.csv中的id保持一致，
-不可遗漏id，也不可多id，否则将报错。
+3. id不可以为空，从1开始编号，顺序递增，与Test_reviews.csv中的id保持一致，不可遗漏id，也不可多id，否则将报错。
 
 例如测试数据中id为1-10,那么提交结果中的id也应该为1-10。
 若某id对应评论的所有字段的预测结果均为空，也应保留该id，其他字段用"_"表示即可；

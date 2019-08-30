@@ -28,27 +28,27 @@ flags = tf.flags
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
-    "data_dir", None,
+    "data_dir", './data/',
     "The input datadir.",
 )
 
 flags.DEFINE_string(
-    "bert_config_file", None,
+    "bert_config_file", '../bert/chinese_L-12_H-768_A-12/bert_config.json',
     "The config json file corresponding to the pre-trained BERT model."
 )
 
 flags.DEFINE_string(
-    "task_name", "NER", "The name of the task to train."
+    "task_name", "ner", "The name of the task to train."
 )
 
 flags.DEFINE_string(
-    "output_dir", None,
+    "output_dir", './output/',
     "The output directory where the model checkpoints will be written."
 )
 
 ## Other parameters
 flags.DEFINE_string(
-    "init_checkpoint", None,
+    "init_checkpoint", '../bert/chinese_L-12_H-768_A-12/bert_model.ckpt',
     "Initial checkpoint (usually from a pre-trained BERT model)."
 )
 
@@ -63,7 +63,7 @@ flags.DEFINE_integer(
 )
 
 flags.DEFINE_bool(
-    "do_train", True,
+    "do_train", False,
     "Whether to run training."
 )
 flags.DEFINE_bool("use_tpu", False, "Whether to use TPU or GPU/CPU.")
@@ -95,7 +95,7 @@ flags.DEFINE_integer("save_checkpoints_steps", 1000,
 flags.DEFINE_integer("iterations_per_loop", 1000,
                      "How many steps to make in each estimator call.")
 
-flags.DEFINE_string("vocab_file", None,
+flags.DEFINE_string("vocab_file", '../bert/chinese_L-12_H-768_A-12/vocab.txt',
                     "The vocabulary file that the BERT model was trained on.")
 tf.flags.DEFINE_string("master", None, "[Optional] TensorFlow master URL.")
 flags.DEFINE_integer(
@@ -386,7 +386,8 @@ def create_model(bert_config, is_training, input_ids, input_mask,
         output_layer = tf.reshape(output_layer, [-1, hidden_size])
         logits = tf.matmul(output_layer, output_weight, transpose_b=True)
         logits = tf.nn.bias_add(logits, output_bias)
-        logits = tf.reshape(logits, [-1, FLAGS.max_seq_length, num_labels+1])
+        #num_labels 特别注意
+        logits = tf.reshape(logits, [-1, FLAGS.max_seq_length, num_labels])
         # mask = tf.cast(input_mask,tf.float32)
         # loss = tf.contrib.seq2seq.sequence_loss(logits,labels,mask)
         # return (loss, logits, predict)
@@ -625,11 +626,11 @@ def main(_):
                 writer.write(output_line)
 
 if __name__ == "__main__":
-    flags.mark_flag_as_required("data_dir")
-    flags.mark_flag_as_required("task_name")
-    flags.mark_flag_as_required("vocab_file")
-    flags.mark_flag_as_required("bert_config_file")
-    flags.mark_flag_as_required("output_dir")
+    #flags.mark_flag_as_required("data_dir")
+    #flags.mark_flag_as_required("task_name")
+    #flags.mark_flag_as_required("vocab_file")
+    #flags.mark_flag_as_required("bert_config_file")
+    #flags.mark_flag_as_required("output_dir")
     tf.app.run()
 
 

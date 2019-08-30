@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 
 import sys
-sys.path.append("../bert")
+sys.path.append("../../bert")
 
 import collections
 import csv
@@ -42,13 +42,13 @@ flags.DEFINE_string(
     "for the task.")
 
 flags.DEFINE_string(
-    "bert_config_file", '../bert/chinese_L-12_H-768_A-12/bert_config.json',
+    "bert_config_file", '../../bert/chinese_L-12_H-768_A-12/bert_config.json',
     "The config json file corresponding to the pre-trained BERT model. "
     "This specifies the model architecture.")
 
 flags.DEFINE_string("task_name", 'category', "The name of the task to train.")
 
-flags.DEFINE_string("vocab_file", '../bert/chinese_L-12_H-768_A-12/vocab.txt',
+flags.DEFINE_string("vocab_file", '../../bert/chinese_L-12_H-768_A-12/vocab.txt',
                     "The vocabulary file that the BERT model was trained on.")
 
 flags.DEFINE_string(
@@ -58,7 +58,7 @@ flags.DEFINE_string(
 ## Other parameters
 
 flags.DEFINE_string(
-    "init_checkpoint", '../bert/chinese_L-12_H-768_A-12/bert_model.ckpt',
+    "init_checkpoint", '../../bert/chinese_L-12_H-768_A-12/bert_model.ckpt',
     "Initial checkpoint (usually from a pre-trained BERT model).")
 
 flags.DEFINE_bool(
@@ -72,12 +72,12 @@ flags.DEFINE_integer(
     "Sequences longer than this will be truncated, and sequences shorter "
     "than this will be padded.")
 
-flags.DEFINE_bool("do_train", True, "Whether to run training.")
+flags.DEFINE_bool("do_train", False, "Whether to run training.")
 
-flags.DEFINE_bool("do_eval", True, "Whether to run eval on the dev set.")
+flags.DEFINE_bool("do_eval", False, "Whether to run eval on the dev set.")
 
 flags.DEFINE_bool(
-    "do_predict", True,
+    "do_predict", False,
     "Whether to run the model in inference mode on the test set.")
 
 flags.DEFINE_integer("train_batch_size", 32, "Total batch size for training.")
@@ -244,6 +244,8 @@ class CategoryProcessor(DataProcessor):
       guid = "%s-%s" % (set_type, i)
 
       text_a = tokenization.convert_to_unicode(line[1])
+      text_b = tokenization.convert_to_unicode(line[2])
+      text_a = text_a+text_b
       
       if set_type == "test":
         label = "其他"
@@ -253,7 +255,7 @@ class CategoryProcessor(DataProcessor):
           InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
     return examples
 #-----------------------------------------
-##
+
 def convert_single_example(ex_index, example, label_list, max_seq_length,
                            tokenizer):
   """Converts a single `InputExample` into a single `InputFeatures`."""

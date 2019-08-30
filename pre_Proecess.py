@@ -3,18 +3,14 @@
 
 __author__ = 'xmxoxo<xmxoxo@qq.com>'
 
+#数据预处理
+
 import os
 import sys
 import pandas as pd
 import numpy as np
 import time
-import matplotlib.pyplot as plt
-
-from datetime import datetime
-
-path= './train/'
-
-#数据预处理
+import argparse
 
 # 读入文件
 def readtxtfile(fname,encoding='utf-8'):
@@ -57,40 +53,8 @@ def MapNewColumn(df,oldcol,newcol,isdrop  = 1):
     #df = MakeDummies(df,newcol)
     return df
 
-#指定列按特征索引值进行映射到新列newColumn
-#如果未指定文件名，则根据列名自动加载映射文件
-def pre_MapNewColumn(df,oldcol,newcol, mapfile = ''):
-    try:
-        if not mapfile:
-            mapfile = 'MapNewColumn_%s.csv' % oldcol
-        print('正在载入字典文件:%s...' % mapfile)
-        dfkey = pd.read_csv(mapfile,index_col=[0])
-        dictKey = dfkey.set_index('index').T.to_dict('records')[0]
-        #print(dictKey)
-        df[newcol] = df[oldcol].map(dictKey)
-        df.drop(oldcol,axis=1, inplace=True)
-        return df
-    except Exception as e:
-        logging.error('Error : '+ traceback.format_exc())
-        #print(e)
-        return None    
-
-#数据字段处理：从字段列表文件中读取字段清单，并进行重新选择
-def pre_FixColumns (df, filename = 'datColumns.txt'):
-    try:
-        if not filename:
-            filename = 'datColumns.txt'
-        strTxt = readtxtfile(filename,encoding='gb2312')
-        if strTxt:
-            lstColumns = strTxt.split('\n')
-            df = df[lstColumns]
-        return df
-    except Exception as e:
-        logging.error('Error : '+ traceback.format_exc())
-        return df
-
 #把原文内容合并到四元组记录中，形成新的数据文件
-def DatMerge (path= './train/', outpath = './data/', rebuild = 0):
+def DatMerge (path= './TRAIN/', outpath = './data/', rebuild = 0):
     fnout = os.path.join(outpath, 'Train_merge.csv')
     if rebuild:
         print('指定强制重新生成数据文件...')
@@ -123,8 +87,8 @@ def DatMerge (path= './train/', outpath = './data/', rebuild = 0):
     #save 
     df2.to_csv(fnout)
 
-#统计所有的 种类 Categories 和 极性Polarities 的值 
-def getEnum (path= './train/'):
+#统计所有的 属性分类 Categories 和 观点分类 Polarities 的值 
+def getEnum (path= './TRAIN/',rebuild = 0):
     fnout = os.path.join(path, 'Train_merge.csv')
     df = pd.read_csv(fnout,index_col=[0])
 
@@ -132,7 +96,7 @@ def getEnum (path= './train/'):
     df = MapNewColumn(df,'Polarities','Polarities_v')
 
 #生成序列标注训练文件
-def CreateSerialFile (path= './train/', outpath = './data/' , rebuild = 0):
+def CreateSerialFile (path= './TRAIN/', outpath = './data/' , rebuild = 0):
     pass
     fnout = os.path.join(outpath, 'train.txt') 
     if rebuild:
@@ -141,8 +105,7 @@ def CreateSerialFile (path= './train/', outpath = './data/' , rebuild = 0):
         if os.path.isfile(fnout):
             print('标注文件已生成,跳过生成步骤...')
             return 0
-
-    
+   
     fndat = os.path.join(path, 'Train_merge.csv')
     df = pd.read_csv(fndat,index_col=[0])
 
@@ -166,7 +129,8 @@ def CreateSerialFile (path= './train/', outpath = './data/' , rebuild = 0):
             
             lastId=sid
             strLine = x['text']
-            #去掉*号
+            #是否去掉一些特殊符号，注意去掉符号可能影响索引位置
+            #特殊符号有： &thinsp ** ?? 等
             #strLine = strLine.replace('*','')
 
             lstLine = [ x+' O' for x in list(strLine)]  
@@ -187,12 +151,19 @@ def CreateSerialFile (path= './train/', outpath = './data/' , rebuild = 0):
         #if i>10:
         #    print(strTxt)
         #    break
-    #保存
-    savetofile(strTxt, fnout)
+    #2019/8/30 补充最后一句
+    if lstLine:
+        strTxt += '\n'.join(lstLine)+'\n\n'
+
+    #保存数据
+    #print(strTxt[-40:] )
+    savetofile(strTxt+'\n\n', fnout)
     print('标注数据已保存。')
     
-#生成标注 测试集的数据样本
-def CreateTestSet (path= './TEST/', outpath = './data/', rebuild = 0):
+#生成标注测试集的数据样本
+#原始文件：./data/reviews.csv  需要把等预测的数据复制到这里
+#目标文件：./data/test.txt
+def CreateTestSet (sourcefile = './data/reviews.csv', outpath = './data/', rebuild = 0):
     pass
     fnout = os.path.join(outpath, 'test.txt')
     if rebuild:
@@ -204,17 +175,24 @@ def CreateTestSet (path= './TEST/', outpath = './data/', rebuild = 0):
 
     print('正在生成测试集文件...')
     #读取数据文件
-    fn = os.path.join(path, 'Test_reviews.csv')
-    df = pd.read_csv(fn)
+    #fn = os.path.join(path, 'reviews.csv')
+    df = pd.read_csv(sourcefile)
+    #print(df.shape)
     #字段列表： id,Reviews
     sTxt = '\n'.join(list(df['Reviews']))
+    #print('-'*30)
+    #print(sTxt[-100:] )
+    #print('-'*30)
+    #return 0
     strRet = '\n'.join([ x + ' O' if x!='\n' else '' for x in sTxt])
-    #print(strRet)    
-    savetofile(strRet, fnout)
-    print('测试集数据已保存。')
+    print('-'*30)
+    print( strRet[:40] + '\n...\n' + strRet[-40:] )
+    print('-'*30)
+    #坑：结束要加两个换行，不然会漏数据 2019/8/28 
+    savetofile(strRet + '\n\n', fnout)
+    print('测试集标注数据已生成。')
 
-
-#生成情感模型训练数据
+#生成观点分类模型训练数据
 #字段列表：,id,AspectTerms,A_start,A_end,OpinionTerms,O_start,O_end,Categories,Polarities,text
 def CreatePolarityTrain (path= './TRAIN/', outpath = './Polarity/data/', rebuild = 0):
     pass
@@ -223,7 +201,7 @@ def CreatePolarityTrain (path= './TRAIN/', outpath = './Polarity/data/', rebuild
         print('指定强制重新生成标注文件...')
     else:
         if os.path.isfile(fnout):
-            print('标注文件已生成,跳过生成步骤...')
+            print('观点分类训练文件已生成,跳过生成步骤...')
             return 0
     
     fndat = os.path.join(path, 'Train_labels.csv')
@@ -263,9 +241,10 @@ def CreatePolarityTrain (path= './TRAIN/', outpath = './Polarity/data/', rebuild
     df_train.to_csv(fnout,index=False)
     df_dev.to_csv(os.path.join(outpath, 'dev.tsv'),index=False) 
     dfn.to_csv(os.path.join(outpath, 'test.tsv'),index=False)
-    print('情感模型训练数据已生成。')
+    print('观点分类模型训练数据已生成。')
 
-##生成分类模型训练数据
+
+##生成属性分类模型训练数据
 def CreateCategoryTrain (path= './TRAIN/', outpath = './Category/data/', rebuild = 0):
     pass
     fnout = os.path.join(outpath, 'train.tsv') 
@@ -273,7 +252,7 @@ def CreateCategoryTrain (path= './TRAIN/', outpath = './Category/data/', rebuild
         print('指定强制重新生成标注文件...')
     else:
         if os.path.isfile(fnout):
-            print('标注文件已生成,跳过生成步骤...')
+            print('属性分类训练文件已生成,跳过生成步骤...')
             return 0
     
     fndat = os.path.join(path, 'Train_labels.csv')
@@ -302,28 +281,43 @@ def CreateCategoryTrain (path= './TRAIN/', outpath = './Category/data/', rebuild
     df_train.to_csv(fnout,index=False)
     df_dev.to_csv(os.path.join(outpath, 'dev.tsv'),index=False) 
     dfn.to_csv(os.path.join(outpath, 'test.tsv'),index=False)
-    print('分类模型训练数据已生成。')
+    print('属性分类模型训练数据已生成。')
 
 
-if __name__ == '__main__':
+def main_cli ():
     pass
-    rebuild = 0
+    parser = argparse.ArgumentParser(description='数据预处理，包含训练数据与预测数据的预处理。')
+    parser.add_argument('-rebuild', type=int, default="0",
+                        help='强制重生成所有训练数据，默认0')
+    parser.add_argument('-predictfile', type=str, default="./data/reviews.csv",
+                        help='待预测文件，默认‘./data/reviews.csv’')
+    parser.add_argument('-model', type=str, default="train",
+                        help='运行模式,train=训练 predict=预测，默认train')
+    args = parser.parse_args()
+
+    rebuild = args.rebuild
+    predictfile = args.predictfile
 
     #合并数据
-    DatMerge()
-
-    #getEnum()
+    DatMerge(rebuild = rebuild)
+    #生成字典
+    getEnum(rebuild = rebuild)
 
     #----NER标注部分----
     #训练集与验证集：生成序列标注文件
     CreateSerialFile(rebuild = rebuild)
 
-    #生成测试集
-    CreateTestSet(rebuild = rebuild)
-
+    #生成序列标注测试集
+    #norebuild = 0 if rebuild else 1
+    CreateTestSet(sourcefile = predictfile, rebuild = not rebuild)
     #----NER标注部分结束----
 
+    #观点分类训练数据生成
     CreatePolarityTrain(rebuild = rebuild)
 
-    CreateCategoryTrain(rebuild =1)
+    #属性分类模型训练数据生成
+    CreateCategoryTrain(rebuild = rebuild)
 
+if __name__ == '__main__':
+    pass
+    main_cli()
