@@ -26,12 +26,12 @@ parser.add_argument('-predict', type=int, default="0",
                     help='预测数据选择，0=测试数据，1=训练数据； 默认0')
 parser.add_argument('-rebuild', type=int, default="0",
                     help='强制重生成所有训练数据，默认0')
-parser.add_argument('-Debug', type=int, default="0",
+parser.add_argument('-debug', type=int, default="0",
                     help='调试模式，每步都等确认；默认0')
 args = parser.parse_args()
 
 rebuild = args.rebuild
-IsDebug = args.Debug
+IsDebug = args.debug
 predict = args.predict
 
 #控制预测哪个文件
@@ -57,9 +57,11 @@ lstCommands = [
     {
     'begin':'STEP 1: 原始数据文件，生成序列标注数据文件...', #开始的提示
     'cmd':[
-        'sudo python pre_Proecess.py -rebuild %d ' % rebuild ,
+        'sudo python pre_Proecess.py -model 0 -rebuild %d ' % rebuild ,
         ],   #命令行，
     'end':'',   #结束的提示
+    'predict':0
+
     },
     {
     'begin':'STEP 2: 调用标注模型进行标注预测...', #开始的提示
@@ -79,7 +81,8 @@ lstCommands = [
     'begin':'STEP 4: 把提取结果复制到属性模型和观点模型目录中...', #开始的提示
     'cmd':[
         'cp ./output/picklabel_test.txt ./Category/data/test.tsv',
-        'cp ./output/picklabel_test.txt ./Polarity/data/test.tsv',
+        #'cp ./output/picklabel_test.txt ./Polarity/data/test.tsv',
+        'sudo python pre_Proecess.py -model 0',
         ],   #命令行，
     'end':'',   #结束的提示
     },

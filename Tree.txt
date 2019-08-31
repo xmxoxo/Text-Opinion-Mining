@@ -1,124 +1,183 @@
 卷 ext 的文件夹 PATH 列表
 卷序列号为 F8BE-2288
 O:\中开\工作日志\NLP技术项目\DC竞赛\电商评论观点挖掘2019\CODE\TEXT-OPINION-MINING
-|   BERT_NER.py
-|   conlleval.pl
-|   labelpick.py
-|   MapNewColumn_Polarities.csv
-|   MergeResult.py
-|   m_predict.sh
-|   predictResult.py
-|   pre_Proecess.py
-|   README.md
-|   run_Predict.py
-|   run_Predict.sh
-|   tf_metrics.py
-|   Tree.txt
-|   
-+---Category
-|   |   run_Category.py
-|   |   
-|   +---data
-|   |       dev.tsv
-|   |       test.tsv
-|   |       train.tsv
-|   |       
-|   \---output
-|           eval_results.txt
-|           label2id.pkl
-|           predict.csv
-|           predict1.csv
-|           test_results.tsv
-|           test_results1.tsv
-|           
-+---data
-|       alltrain.txt
-|       dev.txt
-|       Enum.txt
-|       reviews.csv
-|       test.txt
-|       test_alltrain.txt
-|       Test_reviews.csv
-|       train.txt
-|       Train_merge.csv
-|       Train_reviews.csv
-|       
-+---log
-+---output
-|   |   label2id.pkl
-|   |   label_test.txt
-|   |   merge_test.txt
-|   |   picklabel_test.txt
-|   |   picklabel_test1.txt
-|   |   Result.csv
-|   |   Result_201908282144.csv
-|   |   Result_201908282229.csv
-|   |   Result_201908282258.csv
-|   |   seg_test.txt
-|   |   token_test.txt
-|   |   
-|   +---testdat
-|   |       label_test.txt
-|   |       merge_test.txt
-|   |       picklabel_test.txt
-|   |       token_test.txt
-|   |       
-|   \---traindat
-|           label_test.txt
-|           merge_test.txt
-|           picklabel_test.txt
-|           token_test.txt
-|           
-+---Polarity
-|   |   run_Polarity.py
-|   |   run_Polarity1.py
-|   |   
-|   +---data
-|   |       dev.tsv
-|   |       test.csv
-|   |       test.tsv
-|   |       train.tsv
-|   |       
-|   +---data_0
-|   |       dev.tsv
-|   |       test.tsv
-|   |       train.tsv
-|   |       
-|   +---data_1
-|   |       dev.tsv
-|   |       test.tsv
-|   |       train.tsv
-|   |       
-|   +---data_2
-|   |       dev.tsv
-|   |       test.tsv
-|   |       train.tsv
-|   |       
-|   +---output
-|   |       label2id.pkl
-|   |       predict.csv
-|   |       test_results.tsv
-|   |       
-|   +---output_0
-|   |       eval_results.txt
-|   |       label2id.pkl
-|   |       test_results.tsv
-|   |       
-|   +---output_1
-|   |       eval_results.txt
-|   |       test_results.tsv
-|   |       
-|   \---output_2
-|           eval_results.txt
-|           label2id.pkl
-|           test_results.tsv
-|           
-+---TEST
-|       README.md
-|       Result(example).csv
-|       Test_reviews.csv
-|       
-\---TRAIN
+│  BERT_NER.py
+│  labelpick.py
+│  MapNewColumn_Categories.csv
+│  MapNewColumn_Polarities.csv
+│  MergeResult.py
+│  modelscore.py
+│  m_predict.sh
+│  predictResult.py
+│  pre_Proecess.py
+│  README.md
+│  run_Predict.py
+│  tf_metrics.py
+│  Tree.txt
+│  
+├─Category
+│  │  run_Category.py
+│  │  
+│  ├─data
+│  │      dev.tsv
+│  │      test.tsv
+│  │      train.tsv
+│  │      
+│  └─output
+│      │  predict.csv
+│      │  test_results.tsv
+│      │  
+│      ├─testdat
+│      │      eval_results.txt
+│      │      label2id.pkl
+│      │      predict.csv
+│      │      predict1.csv
+│      │      test_results.tsv
+│      │      test_results1.tsv
+│      │      
+│      └─traindat
+│              eval_results.txt
+│              label2id.pkl
+│              predict.csv
+│              test_results.tsv
+│              
+├─data
+│  │  alltrain.txt
+│  │  data_merge.csv
+│  │  dev.txt
+│  │  Enum.txt
+│  │  reviews.csv
+│  │  test.txt
+│  │  test_alltrain.txt
+│  │  Test_reviews.csv
+│  │  train.txt
+│  │  Train_merge.csv
+│  │  Train_reviews.csv
+│  │  
+│  ├─test
+│  │      reviews.csv
+│  │      test.txt
+│  │      
+│  └─train
+│          data_merge.csv
+│          dev.txt
+│          reviews.csv
+│          test.txt
+│          train.txt
+│          Train_merge.csv
+│          
+├─log
+├─output
+│  │  label_test.txt
+│  │  merge_test.txt
+│  │  picklabel_test.txt
+│  │  Result.csv
+│  │  seg_test.txt
+│  │  token_test.txt
+│  │  
+│  ├─CRF-dat
+│  │      label_test.txt
+│  │      merge_test.txt
+│  │      picklabel_test.txt
+│  │      Result.csv
+│  │      seg_test.txt
+│  │      token_test.txt
+│  │      
+│  ├─testdat
+│  │      label2id.pkl
+│  │      label_test.txt
+│  │      merge_test.txt
+│  │      picklabel_test.txt
+│  │      picklabel_test1.txt
+│  │      Result.csv
+│  │      Result_201908282144.csv
+│  │      Result_201908282229.csv
+│  │      Result_201908282258.csv
+│  │      Result_201908291102.csv
+│  │      Result_201908301625.csv
+│  │      Result_201908301708.csv
+│  │      Result_201908311526.csv
+│  │      seg_test.txt
+│  │      token_test.txt
+│  │      
+│  └─traindat
+│          label_test.txt
+│          merge_test.txt
+│          picklabel_test.txt
+│          Result.csv
+│          seg_test.txt
+│          token_test.txt
+│          
+├─Polarity
+│  │  run_Polarity.py
+│  │  run_Polarity1.py
+│  │  
+│  ├─data
+│  │      dev.tsv
+│  │      test.csv
+│  │      test.tsv
+│  │      train.tsv
+│  │      
+│  ├─data_0
+│  │      dev.tsv
+│  │      test.tsv
+│  │      train.tsv
+│  │      
+│  ├─data_1
+│  │      dev.tsv
+│  │      test.tsv
+│  │      train.tsv
+│  │      
+│  ├─data_2
+│  │      dev.tsv
+│  │      test.tsv
+│  │      train.tsv
+│  │      
+│  ├─data_3
+│  │      dev.tsv
+│  │      test.tsv
+│  │      train.tsv
+│  │      
+│  ├─output
+│  │  │  predict.csv
+│  │  │  test_results.tsv
+│  │  │  
+│  │  ├─testdat
+│  │  │      label2id.pkl
+│  │  │      predict.csv
+│  │  │      test_results.tsv
+│  │  │      
+│  │  └─traindat
+│  │          label2id.pkl
+│  │          predict.csv
+│  │          test_results.tsv
+│  │          
+│  ├─output_0
+│  │      eval_results.txt
+│  │      label2id.pkl
+│  │      test_results.tsv
+│  │      
+│  ├─output_1
+│  │      eval_results.txt
+│  │      test_results.tsv
+│  │      
+│  ├─output_2
+│  │      eval_results.txt
+│  │      label2id.pkl
+│  │      test_results.tsv
+│  │      
+│  └─output_3
+│          eval_results.txt
+│          label2id.pkl
+│          predict.csv
+│          test_results.tsv
+│          
+├─TEST
+│      README.md
+│      Result(example).csv
+│      Test_reviews.csv
+│      
+└─TRAIN
         README.md
         Train_labels.csv
         Train_merge.csv

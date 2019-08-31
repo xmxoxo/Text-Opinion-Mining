@@ -80,18 +80,19 @@ def doprocess(path):
     print('-'*30)
 
     #生成句子拆分标识索引号
-    #2019/8/30 这里有错误
+    #2019/8/30 这里有错误，要改成统一的字段名
     f_index0 = txtout[txtout.columns[0]][txtout[txtout.columns[0]].isin(['[CLS]'])]
     f_index1 = txtout[txtout.columns[0]][txtout[txtout.columns[0]].isin(['[SEP]'])]
     lstSeg = list(zip(list(f_index0.index),list(f_index1.index)))
     print(lstSeg[:10])
     print(len(lstSeg))
-    print('-'*30)
+    #print(lstSeg[217:220])
 
     #for i in range(len(lstSeg)):
     #    print('%d : %s' % (i, lstSeg[i]) )        
     #return 0
     #-----------------------------------------
+    #返回索引所在的位置
     #给数据增加ID号, lstSeg 记录着每条记录的开始与结束
     #test:[(0, 39), (40, 70), (71, 86), (87, 100)]
     #train:[(0, 10), (11, 28), (29, 53), (54, 82)]
@@ -103,6 +104,9 @@ def doprocess(path):
                 break
         return 0
     #-----------------------------------------
+    #print(getid(5391, lstSeg) )
+    #print('-'*30)
+    #sys.exit()
 
 
     #提取label
@@ -132,18 +136,22 @@ def doprocess(path):
     for x in fout.index:
         word = fout[fout.columns[0]][x]
         lbl = fout[fout.columns[1]][x]
-        ffid = getid(x)
+        #ffid = getid(x)
         subindex +=1
+        #跨句子
         if x > lstSeg[fid][1]:
             if seg and lastlbl:
                 #print ('当前id：%d' % ffid)
-                lstid.append(fid+1)
+                fid = getid(index)-1
+                lstid.append( fid+1 )
+
                 lstindex.append(index)
                 lsttxt.append(seg)
                 lstlabel.append(lastlbl[-3:])
                 #计算当前句位置
                 lstSegIndex.append(lstSeg[fid][0])
-                indexnew = index - lstSeg[fid][0]
+                #2019/8/31 注意要多减1
+                indexnew = index - lstSeg[fid][0]-1
                 lstindex_new.append(indexnew)
                 #第几个子句
                 lstSubPos.append(getid(indexnew, lstS = lstSubSeg[fid]) )
@@ -158,7 +166,9 @@ def doprocess(path):
         #2019/8/30 如果标注不连续也要进行处理，增加: or ( x - (index + len(seg)) )>1 
         if lbl[0] == 'B' or lastlbl[-3:] != lbl[-3:] or ( x - (index + len(seg)) )>1 :
             if seg and lastlbl:
-                lstid.append(fid+1)
+                fid = getid(index)-1
+                lstid.append( fid+1 )
+
                 lstindex.append(index)
                 lsttxt.append(seg)
                 lstlabel.append(lastlbl[-3:])
@@ -185,7 +195,9 @@ def doprocess(path):
     print('最后记录')
     print(fid, seg , lastlbl, x)
     if seg and lastlbl:
-        lstid.append(fid+1)
+        #lstid.append(fid+1)
+        fid = getid(index)-1
+        lstid.append( fid +1 )
         lstindex.append(x)
         lsttxt.append(seg)
         lstlabel.append(lastlbl[-3:])
@@ -205,8 +217,8 @@ def doprocess(path):
         'txt':lsttxt,
         'label':lstlabel,
         'segIndex': lstSegIndex,
-        'index_new':lstindex_new,
-        'subPos': lstSubPos,
+        'index_new':lstindex_new, #本句索引位置
+        'subPos': lstSubPos, #所在分句
     }
 
     #转为DataFrame
@@ -247,6 +259,8 @@ def doprocess(path):
     lstID = []
     lstASP = []
     lstOPI = []
+    lstAStar = []
+    lstOStar = []
     
     cID = 0
     cSub = 0
@@ -258,11 +272,15 @@ def doprocess(path):
     lbl = ''
     lastASP = ''
     lastOPI = ''
+    lastAStar = ''
+    lastOStar = ''
     for x in outdf.index:
         cID = outdf['id'][x]
         txt = outdf['txt'][x]
         lbl = outdf['label'][x]
         cSub = outdf['subPos'][x]
+        cPos = outdf['index_new'][x]
+
         #判断是否同一个子句
         if cID==lastID and cSub==lastSub:
             #是同一个子句,判断填充内容
@@ -276,6 +294,10 @@ def doprocess(path):
                 lstOPI.append(lastOPI)
                 lastASP = ''
                 lastOPI = ''
+                lstAStar.append(lastAStar)
+                lstOStar.append(lastOStar)
+                lastAStar = ''
+                lastOStar = ''
             
         else:
             #不是同一句,之前又有数据，则先旧数据保存起来
@@ -287,6 +309,10 @@ def doprocess(path):
                 lstOPI.append(lastOPI)
                 lastASP = ''
                 lastOPI = ''
+                lstAStar.append(lastAStar)
+                lstOStar.append(lastOStar)
+                lastAStar = ''
+                lastOStar = ''
         
         lastID = cID
         lastTxt = txt
@@ -295,9 +321,11 @@ def doprocess(path):
         if lbl=='ASP':
             if not lastASP:
                 lastASP = lastTxt
+                lastAStar = cPos
         if lbl=='OPI':
             if not lastOPI:
                 lastOPI = lastTxt
+                lastOStar = cPos
         
         #print(lastID,lastASP,lastOPI)
         #print('-'*10)
@@ -311,6 +339,8 @@ def doprocess(path):
         lstID.append(lastID)
         lstASP.append(lastASP)
         lstOPI.append(lastOPI)
+        lstAStar.append(lastAStar)
+        lstOStar.append(lastOStar)
 
     '''
     print(lstID[:10])
@@ -325,6 +355,8 @@ def doprocess(path):
         'id':lstID,
         'ASP':lstASP,
         'OPI':lstOPI,
+        'A_start':lstAStar,
+        'O_start':lstOStar,
     }
 
     #转为DataFrame

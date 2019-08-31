@@ -243,8 +243,8 @@ class PolarityProcessor(DataProcessor):
       guid = "%s-%s" % (set_type, i)
 
       text_a = tokenization.convert_to_unicode(line[1])
-      text_b = tokenization.convert_to_unicode(line[2])
-      text_a = text_a+text_b
+      #text_b = tokenization.convert_to_unicode(line[2])
+      #text_a = text_a+text_b
       
       if set_type == "test":
         label = "中性"
@@ -253,52 +253,8 @@ class PolarityProcessor(DataProcessor):
       examples.append(
           InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
     return examples
+
 #-----------------------------------------
-#内容分类数据处理 2019/8/28
-#labels:  正面=2 负面=1 中性=0
-class PolarityProcessor(DataProcessor):
-  def get_train_examples(self, data_dir):
-    """See base class."""
-    return self._create_examples(
-        self._read_tsv(os.path.join(data_dir, "train.tsv")), "train")
-
-  def get_dev_examples(self, data_dir):
-    """See base class."""
-    return self._create_examples(
-        self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
-
-  def get_test_examples(self, data_dir):
-    """See base class."""
-    return self._create_examples(
-        self._read_tsv(os.path.join(data_dir, "test.tsv")), "test")
-
-  def get_labels(self):
-    #return ["0", "1", "2"]
-    return ["正面", "负面", "中性"]
-
-  def _create_examples(self, lines, set_type):
-    """Creates examples for the training and dev sets."""
-    examples = []
-    for (i, line) in enumerate(lines):
-      #跳过首行  
-      if i == 0: 
-        continue
-
-      guid = "%s-%s" % (set_type, i)
-
-      text_a = tokenization.convert_to_unicode(line[1])
-      text_b = tokenization.convert_to_unicode(line[2])
-      text_a = text_a+text_b
-      
-      if set_type == "test":
-        label = "中性"
-      else:
-        label = tokenization.convert_to_unicode(line[0])
-      examples.append(
-          InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
-    return examples
-#-----------------------------------------
-##
 def convert_single_example(ex_index, example, label_list, max_seq_length,
                            tokenizer):
   """Converts a single `InputExample` into a single `InputFeatures`."""

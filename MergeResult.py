@@ -36,10 +36,15 @@ def MergeDat ():
     #合并 Categories,Polarities
     df_pick['Category'] = df_cat['label']
     df_pick['Polarity'] = df_pol['label']
-    #print(df_pick.head(10))
-    #print('-'*30)
+    print(df_pick.head(10))
+    print('-'*30)
+    #原字段： id,ASP,OPI,A_start,O_start
 
-    #字段:id,ASP,OPI,Category,Polarity
+    df_pick = df_pick[['id','ASP','OPI','Category','Polarity']]
+    lstColumns = ['id','AspectTerms','OpinionTerms','Categories','Polarities']
+    df_pick.columns = lstColumns
+
+    #字段:['id','AspectTerms','OpinionTerms','Categories','Polarities']     
     #2019/8/29 补充id缺失的记录
     lstLost = getLost(list(df_pick['id']))
     if lstLost:
@@ -48,10 +53,10 @@ def MergeDat ():
         lstB = list('_'*len(lstLost))
         dictDat = {
             'id':lstLost,
-            'ASP':lstB,
-            'OPI':lstB,
-            'Category':lstB,
-            'Polarity':lstB,
+            'AspectTerms':lstB,
+            'OpinionTerms':lstB,
+            'Categories':lstB,
+            'Polarities':lstB,
         }
         df_new = pd.DataFrame(dictDat)
         #接到原数据后面
