@@ -792,3 +792,13 @@ sudo python run_Predict.py -predict 0 -rebuild 1 -debug 1
 总条数：4854, 最大ID：2237, 缺失ID数：0
 最终结果已经保存:./output/Result.csv
 ```
+
+
+初赛最终得分：
+
+```
+电商评论观点挖掘:82 /0.725
+日期:2019-08-30 17:36:00
+排名: 40
+score:0.7254
+```
