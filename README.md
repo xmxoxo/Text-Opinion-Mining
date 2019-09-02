@@ -452,8 +452,9 @@ python modelscore.py 原始数据文件 预测结果文件
     原始数据文件: 原始数据文件或者训练数据文件，默认为 ./TRAIN/Train_labels.csv
     预测结果文件：模型预测输出的结果文件，默认值为 ./output/Result.csv
 
-快速进行评价： python modelscore.py
-指定文件评价： python modelscore.py ./data/labels.csv ./output1/Result.csv
+快速进行评价：`python modelscore.py`
+指定文件评价：`python modelscore.py ./data/labels.csv ./output1/Result.csv`
+
 -----------------------------------------
 ## 模型优化 
 2019/8/30
@@ -619,8 +620,14 @@ P:6938 G:6633 S:5482
 召回率: 0.826
 F1得分: 0.808
 ```
+
 -----------------------------------------
-生成测试数据的标注文件: python pre_Process.py -predictfile ./TEST/Test_reviews.csv
+
+生成测试数据的标注文件: 
+
+```
+python pre_Process.py -predictfile ./TEST/Test_reviews.csv
+```
 
 -----------------------------------------
 ## CRF-NER模型：
@@ -659,6 +666,7 @@ P:6953 G:6633 S:5400
 F1得分: 0.795
 ```
 得分并没有提高 ，还是用原来的模型吧。
+
 -----------------------------------------
 ## 一键执行  [2019/8/30 18:45]
 
@@ -760,10 +768,14 @@ F1得分: 0.820
 -----------------------------------------
 ## 使用最新模型生成提交数据
 
+[2019/8/31 15:50] 虽然截止时间已经过掉了，但既然优化了模型，还是把测试数据跑一遍提交上去。
+
+一键预测命令：
 ```
 sudo python run_Predict.py -predict 0 -rebuild 1 -debug 1
 ```
 
+得到的结果：
 ```
    id AspectTerms OpinionTerms Categories Polarities
 0   1           _          是正品         真伪         正面
